@@ -9,7 +9,7 @@
             ,icon: "icon-inactive.png"
             ,badge: {
                 display: "none",
-                textContent: "12",
+                textContent: "",
                 color: "white",
                 backgroundColor: "rgba(211, 0, 4, 1)"
             }
@@ -24,9 +24,12 @@
         }, false);
 
 
-        var Failure = function () {
-            button.badge.textContent = '?';
+        var Failure = function (error) {
+            console.log(error);
             button.badge.display = "block";
+            button.badge.textContent = " ? ";
+            button.icon = "icon-inactive.png";
+            button.title = 'The Old Reader\n\nError communicating with the server.';
             setTimeout( function(){ Update(); } , 30000 );
         };
 
@@ -50,19 +53,20 @@
             }
             button.badge.textContent = count;
             button.badge.display = count == 0 ? "none" : "block";
+            button.icon = "icon-active.png";
             button.title = s;
             setTimeout( function(){ Update(); } , 60000 );
         };
 
         var Update = function() {
             var httpRequest = new XMLHttpRequest();
-            var requestTimeout = window.setTimeout(function() { httpRequest.abort(); Failure(); }, 20000);
-            httpRequest.onerror = function() { Failure(); };
+            var requestTimeout = window.setTimeout(function() { httpRequest.abort(); Failure('Request timed out.'); }, 20000);
+            httpRequest.onerror = function() { Failure('XMLHttpRequest error.'); };
             httpRequest.onreadystatechange = function() {
                 if (httpRequest.readyState == 4) {
                     window.clearTimeout(requestTimeout);
                     if (httpRequest.status >= 400) {
-                        Failure();
+                        Failure('HTTP status '+httpRequest.status);
                     }
                     else if (httpRequest.responseText) {
                         var feedData = {};
@@ -71,11 +75,11 @@
                             Success(feedData);
                         }
                         catch (exception) {
-                            Failure();
+                            Failure('Invalid server response.');
                         }
                     }
                     else {
-                        Failure();
+                        Failure('Empty response.');
                     }
                 }
             };
@@ -83,7 +87,7 @@
                 httpRequest.open('GET', 'http://theoldreader.com/feeds/counts.json', true);
                 httpRequest.send(null);
             } catch (exception) {
-                Failure();
+                Failure('Error sending HTTP request.');
             }
         };
         Update();
