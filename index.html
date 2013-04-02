@@ -25,11 +25,10 @@
 
 
         var Failure = function (error) {
-            console.log(error);
             button.badge.display = "block";
             button.badge.textContent = " ? ";
             button.icon = "icon-inactive.png";
-            button.title = 'The Old Reader\n\nError communicating with the server.';
+            button.title = 'The Old Reader\n\n'+error;
             setTimeout( function(){ Update(); } , 30000 );
         };
 
@@ -60,13 +59,16 @@
 
         var Update = function() {
             var httpRequest = new XMLHttpRequest();
-            var requestTimeout = window.setTimeout(function() { httpRequest.abort(); Failure('Request timed out.'); }, 20000);
-            httpRequest.onerror = function() { Failure('XMLHttpRequest error.'); };
+            var requestTimeout = window.setTimeout(function() { httpRequest.abort(); Failure('Error communicating with the server. Request timed out.'); }, 20000);
+            httpRequest.onerror = function() { Failure('Error communicating with the server.'); };
             httpRequest.onreadystatechange = function() {
                 if (httpRequest.readyState == 4) {
                     window.clearTimeout(requestTimeout);
-                    if (httpRequest.status >= 400) {
-                        Failure('HTTP status '+httpRequest.status);
+                    if (httpRequest.status == 401) {
+                        Failure('You are not logged in.');
+                    }
+                    else if (httpRequest.status >= 400) {
+                        Failure('Error communicating with the server. HTTP status '+httpRequest.status+'.');
                     }
                     else if (httpRequest.responseText) {
                         var feedData = {};
@@ -75,11 +77,11 @@
                             Success(feedData);
                         }
                         catch (exception) {
-                            Failure('Invalid server response.');
+                            Failure('Error communicating with the server. Invalid server response.');
                         }
                     }
                     else {
-                        Failure('Empty response.');
+                        Failure('Error communicating with the server. Invalid server response.');
                     }
                 }
             };
@@ -87,7 +89,7 @@
                 httpRequest.open('GET', 'http://theoldreader.com/feeds/counts.json', true);
                 httpRequest.send(null);
             } catch (exception) {
-                Failure('Error sending HTTP request.');
+                Failure('Error communicating with the server.');
             }
         };
         Update();
