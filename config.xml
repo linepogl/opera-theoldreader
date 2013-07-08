@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" id="http://theoldreader.com">
-	<name>The Old Reader</name>
-	<description>Notifies you about unread items in your The Old Reader account</description>
-  <author href="http://linepogl.wordpress.com" email="linepogl@gmail.com">Lazare INEPOLOGLOU</author>
-  <icon src="icon-128.png"/>
-	<feature name="opera:share-cookies" required="true"/>
-	<access origin="http://theoldreader.com" subdomains="true" />
-</widget>
