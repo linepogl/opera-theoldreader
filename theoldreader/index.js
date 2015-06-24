@@ -4,18 +4,20 @@ button.onClicked.addListener(function(){
 	chrome.tabs.create({url:'http://theoldreader.com/posts/all'});
 });
 
+var timeout = null;
 
 var Failure = function(error) {
+	if (timeout !== null) return;
+	current_status = 'failure';
 	button.setBadgeText({text:" ? "});
 	button.setIcon({path:"icon-inactive.png"});
 	button.setTitle({title:'The Old Reader\n\n' + error});
-	setTimeout(function() {
-	  Update();
-	}, 30000);
+	timeout = setTimeout(function() { Update(); }, 30000);
 };
 
 
 var Success = function(feedData) {
+	if (timeout !== null) return;
 	var s = 'The Old Reader\n';
 	var count = 0;
 	var i, folder;
@@ -37,21 +39,19 @@ var Success = function(feedData) {
 	button.setBadgeText({text:(count==0?'':''+count)});
 	button.setIcon({path:"icon-active.png"});
 	button.setTitle({title:s});
-	setTimeout(function() {
-	  Update();
-	}, 60000);
+	timeout = setTimeout(function() { Update(); }, 60000);
 };
 
 
 var Update = function() {
+	if (timeout !== null) { clearTimeout(timeout); timeout = null; }
+	current_status = 'updating';
 	var httpRequest = new XMLHttpRequest();
 	var requestTimeout = window.setTimeout(function() {
 	  httpRequest.abort();
 	  Failure('Error communicating with the server. Request timed out.');
 	}, 20000);
-	httpRequest.onerror = function() {
-	  Failure('Error communicating with the server.');
-	};
+	httpRequest.onerror = function() { Failure('Error communicating with the server.'); };
 	httpRequest.onreadystatechange = function() {
 	  if (httpRequest.readyState == 4) {
 	    window.clearTimeout(requestTimeout);
