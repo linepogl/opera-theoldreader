@@ -1,7 +1,13 @@
 var button = chrome.browserAction;
 
 button.onClicked.addListener(function(){
-	chrome.tabs.create({url:'http://theoldreader.com/posts/all'});
+	chrome.tabs.query({currentWindow:true, url:'*://theoldreader.com/*'}, function(tabs) {
+		if (tabs.length <= 0) {
+			chrome.tabs.create({url:'http://theoldreader.com/posts/all'});
+		} else {
+			chrome.tabs.highlight({tabs:tabs[0].index});
+		}
+	});
 });
 
 var timeout = null;
